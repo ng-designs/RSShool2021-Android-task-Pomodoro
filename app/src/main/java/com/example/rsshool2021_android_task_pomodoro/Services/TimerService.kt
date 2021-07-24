@@ -22,7 +22,7 @@ class TimerService : Service() {
 
     private val builder by lazy {
         NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Simple Timer")
+            .setContentTitle("Pomodoro")
             .setGroup("Timer")
             .setGroupSummary(false)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
@@ -50,16 +50,16 @@ class TimerService : Service() {
     private fun processCommand(intent: Intent?) {
         when (intent?.extras?.getString(COMMAND_ID) ?: INVALID) {
             COMMAND_START -> {
-                val startTime = intent?.extras?.getLong(STARTED_TIMER_TIME_MS) ?: return
-                val currentValue = intent.extras?.getLong(CURRENT_TIME) ?: return
-                commandStart(startTime, currentValue)
+                val timerLastValue = intent?.extras?.getLong(TIMER_LAST_VALUE_MS) ?: return
+                val lastSystemTime = intent?.extras?.getLong(LAST_SYSTEM_TIME) ?: return
+                commandStart(timerLastValue, lastSystemTime)
             }
             COMMAND_STOP -> commandStop()
             INVALID -> return
         }
     }
 
-    private fun commandStart(startTime: Long, currentValue: Long) {
+    private fun commandStart(timerLastValue: Long, lastSystemTime: Long) {
         if (isServiceStarted) {
             return
         }
@@ -67,21 +67,21 @@ class TimerService : Service() {
         try {
             moveToStartedState()
             startForegroundAndShowNotification()
-            continueTimer(startTime,currentValue)
+            continueTimer(timerLastValue, lastSystemTime)
         } finally {
             isServiceStarted = true
         }
     }
 
-    private fun continueTimer(startTime: Long, currentValue: Long) {
+    private fun continueTimer(timerLastValue: Long, lastSystemTime: Long) {
         job = GlobalScope.launch(Dispatchers.Main) {
             while (true) {
-                val time = currentValue - (System.currentTimeMillis() - startTime)
+                val time = timerLastValue - (System.currentTimeMillis() - lastSystemTime)
                 if (time <= 0) commandStop()
                 notificationManager?.notify(
                     NOTIFICATION_ID,
                     getNotification(
-                        (System.currentTimeMillis() - startTime).displayTime().dropLast(3)
+                        time.displayTime()
                     )
                 )
                 delay(INTERVAL)
@@ -124,7 +124,7 @@ class TimerService : Service() {
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelName = "Pomodoro"
+            val channelName = "pomodoro"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val notificationChannel = NotificationChannel(
                 CHANNEL_ID, channelName, importance
