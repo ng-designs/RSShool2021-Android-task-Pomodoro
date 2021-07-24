@@ -81,10 +81,12 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
 
             valueSetDialog.setPositiveButton("Done" ) { _, _ ->
                 run {
-                    (dialogBinding.hoursPicker.value.toString() + ":" +
-                            dialogBinding.minutesPicker.value.toString() + ":" +
-                            dialogBinding.secondsPicker.value.toString()).also {
-                        binding.timerValueInput.text = it
+                    with(dialogBinding){
+
+                        ((if(hoursPicker.value == 0) "00" else hoursPicker.value.toString()) + ":" +
+                                (if(minutesPicker.value == 0) "00" else minutesPicker.value.toString()) + ":" +
+                                (if(secondsPicker.value == 0) "00" else secondsPicker.value.toString())
+                                ).also { binding.timerValueInput.text = it }
                     }
                 }
             }
@@ -93,10 +95,12 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         }
 
         binding.addNewStopwatchButton.setOnClickListener {
-            if (binding.timerValueInput.text.isNotEmpty()) {
-                val time = binding.timerValueInput.text.trim().split(":")
 
-                val mills = ((time[0].toLong() * 60L) + (time[1].toLong() * 60L) + time[2].toLong()) * 1000L
+            val pickerValues = binding.timerValueInput.text.trim().split(":")
+            val time = pickerValues.sumOf { it.toInt() }
+
+            if (time > 0) {
+                val mills = (((pickerValues[0].toLong() * 60L) + pickerValues[1].toLong()) * 60L + pickerValues[2].toLong()) * 1000L
 
                 if (stopwatches.size <= 10) {
                     stopwatches.add(Stopwatch(nextId++, mills, mills, false))
@@ -131,7 +135,12 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         val newTimers = mutableListOf<Stopwatch>()
         stopwatches.forEach {
             if (it.id == id) {
-                newTimers.add(Stopwatch(it.id, it.startPeriod,currentMs ?: it.currentMs, isStarted))
+                newTimers.add(
+                    Stopwatch(
+                        it.id,
+                        it.startPeriod,
+                        (if(currentMs?.toInt() == 0) it.startPeriod else it.currentMs),
+                        isStarted))
             } else {
                 newTimers.add(it)
             }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.drawable.AnimationDrawable
 import android.os.CountDownTimer
+import android.widget.Toast
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rsshool2021_android_task_pomodoro.MainActivity
@@ -29,7 +30,6 @@ class StopwatchViewHolder(
 
             when {
                 stopwatch.currentMs <= 0L -> {
-                    timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
                     progressIndicator.setCurrent(0)
                 }
                 stopwatch.currentMs == stopwatch.startPeriod -> {
@@ -49,11 +49,8 @@ class StopwatchViewHolder(
 
     private fun initButtonsListeners(stopwatch: Stopwatch) {
 
-        val runningTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
-
         with(binding){
             startPauseButton.setOnClickListener {
-
 
                 if (stopwatch.isStarted) {
                     listener.stop(stopwatch.id, stopwatch.currentMs)
@@ -64,9 +61,7 @@ class StopwatchViewHolder(
 
             restartButton.setOnClickListener {
                 listener.reset(stopwatch.id)
-                if(timerCard.background.equals(R.color.red_600_light)){
-                    timerCard.setBackgroundColor(resources.getColor(R.color.white))
-                }
+                timerCard.setBackgroundColor(resources.getColor(R.color.white))
             }
 
             deleteButton.setOnClickListener { listener.delete(stopwatch.id) }
@@ -102,15 +97,25 @@ class StopwatchViewHolder(
         return object : CountDownTimer(PERIOD, UNIT_ONE_SEC) {
 
             override fun onTick(millisUntilFinished: Long) {
-                if(stopwatch.isStarted){
-                    stopwatch.currentMs -= UNIT_ONE_SEC
-                    binding.progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs)
-                    binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+
+                when {
+                    stopwatch.currentMs <= 0L -> onFinish()
+                    stopwatch.isStarted -> {
+                        stopwatch.currentMs -= UNIT_ONE_SEC
+                        binding.progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs)
+                        binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+                    }
+                    else -> stopTimer(stopwatch)
                 }
             }
 
             override fun onFinish() {
+                binding.timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+                Toast.makeText(itemView.context, "Timer ${stopwatch.startPeriod.displayTime()} is elapsed!", Toast.LENGTH_LONG).show()
+
+                timer?.cancel()
+                stopTimer(stopwatch)
             }
         }
     }
