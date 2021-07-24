@@ -4,7 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:timePickerMode="spinner"
     tools:context=".MainActivity">
+
+    <!--
+    <TextView
+        android:id="@+id/time_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        app:layout_constraintBaseline_toBaselineOf="@id/add_new_stopwatch_button"
+        android:hint="00:00:00"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/add_new_stopwatch_button"
+        app:layout_constraintStart_toStartOf="parent" />
+        -->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
@@ -14,16 +28,52 @@
         app:layout_constraintBottom_toTopOf="@id/add_new_stopwatch_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
         tools:listitem="@layout/stopwatch_element" />
+
+    <NumberPicker
+        android:selectionDividerHeight="50dp"
+        android:id="@+id/hoursPicker"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="25dp"
+        android:theme="@style/NumberPickerTheme"
+        app:layout_constraintEnd_toStartOf="@+id/minutesPicker"
+        app:layout_constraintTop_toBottomOf="@+id/recycler" />
+
+    <NumberPicker
+        android:selectionDividerHeight="50dp"
+        android:id="@+id/minutesPicker"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="10dp"
+        android:theme="@style/NumberPickerTheme"
+        app:layout_constraintEnd_toStartOf="@+id/secondsPicker"
+        app:layout_constraintTop_toBottomOf="@+id/recycler" />
+
+    <NumberPicker
+        android:selectionDividerHeight="50dp"
+        android:id="@+id/secondsPicker"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="50dp"
+        android:theme="@style/NumberPickerTheme"
+        app:layout_constraintEnd_toStartOf="@+id/add_new_stopwatch_button"
+        app:layout_constraintTop_toBottomOf="@+id/recycler" />
 
     <Button
         android:id="@+id/add_new_stopwatch_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
         android:layout_marginBottom="16dp"
-        android:text="Add Stopwatch"
+        android:text="Add timer"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
+    <!--app:layout_constraintStart_toEndOf="@id/time_picker" /> -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.drawable.AnimationDrawable
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rsshool2021_android_task_pomodoro.R
@@ -13,12 +14,23 @@ class StopwatchViewHolder(
     private val binding: StopwatchElementBinding,
     private val listener: StopwatchListener,
     private val resources: Resources
+
 ) : RecyclerView.ViewHolder(binding.root) {
 
     private var timer: CountDownTimer? = null
 
     fun bind(stopwatch: Stopwatch) {
         binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+
+        binding.progressIndicator.setPeriod(stopwatch.startPeriod)
+
+        when {
+            stopwatch.currentMs <= 0L -> binding.progressIndicator.setCurrent(0)
+            stopwatch.currentMs == stopwatch.startPeriod -> {
+//                changeBackgroundOfItem(R.color.transparent)
+                binding.progressIndicator.setCurrent(stopwatch.currentMs)
+            }
+        }
 
         if (stopwatch.isStarted) {
             startTimer(stopwatch)
@@ -73,8 +85,13 @@ class StopwatchViewHolder(
             val interval = UNIT_TEN_MS
 
             override fun onTick(millisUntilFinished: Long) {
+
                 stopwatch.currentMs += interval
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+                if(stopwatch.isStarted){
+                    stopwatch.currentMs -= 1000L
+                    binding.progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs)
+                }
             }
 
             override fun onFinish() {
@@ -92,7 +109,8 @@ class StopwatchViewHolder(
         val s = this / 1000 % 60
         val ms = this % 1000 / 10
 
-        return "${displaySlot(h)}:${displaySlot(m)}:${displaySlot(s)}:${displaySlot(ms)}"
+//        return "${displaySlot(h)}:${displaySlot(m)}:${displaySlot(s)}:${displaySlot(ms)}"
+        return "${displaySlot(h)}:${displaySlot(m)}:${displaySlot(s)}"
     }
 
     private fun displaySlot(count: Long): String {
@@ -105,7 +123,7 @@ class StopwatchViewHolder(
 
     private companion object {
 
-        private const val START_TIME = "00:00:00:00"
+        private const val START_TIME = "00:00:00"
         private const val UNIT_TEN_MS = 10L
         private const val PERIOD = 1000L * 60L * 60L * 24L // Day
     }

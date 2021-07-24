@@ -36,4 +36,8 @@ class StopwatchAdapter(
             override fun getChangePayload(oldItem: Stopwatch, newItem: Stopwatch) = Any()
         }
     }
+
+    object Position {
+        var initialPosition = -1
+    }
 }

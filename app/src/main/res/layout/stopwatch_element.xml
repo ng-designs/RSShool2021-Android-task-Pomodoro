@@ -28,36 +28,22 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="00:00:00:00"
+            android:text="00:00:00"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/blinking_indicator"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.example.rsshool2021_android_task_pomodoro.Stopwatch.CustomView
-            android:id="@+id/custom_view_one"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginBottom="0dp"
-            app:custom_color="@color/purple_500"
-            app:custom_style="stroke"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.example.rsshool2021_android_task_pomodoro.Stopwatch.CustomView
-            android:id="@+id/custom_view_two"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="0dp"
-            app:custom_color="@color/purple_700"
+            android:id="@+id/progressIndicator"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:custom_color="@color/red_700_dark"
             app:custom_style="fill"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/start_pause_button"
+            app:layout_constraintStart_toEndOf="@+id/stopwatch_timer"
             app:layout_constraintTop_toTopOf="parent" />
-        />
 
         <ImageButton
             android:id="@+id/start_pause_button"
@@ -65,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:background="@color/cardview_light_background"
-            android:padding="8dp"
+            android:padding="5dp"
             android:src="@drawable/ic_baseline_play_arrow_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/restart_button"
@@ -77,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:background="@color/cardview_light_background"
-            android:padding="8dp"
+            android:padding="5dp"
             android:src="@drawable/ic_baseline_refresh_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/delete_button"
@@ -89,7 +75,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:background="@color/cardview_light_background"
-            android:padding="8dp"
+            android:padding="5dp"
             android:src="@drawable/ic_baseline_delete_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
