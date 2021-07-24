@@ -18,8 +18,6 @@ class StopwatchViewHolder(
 
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    private val stopwatches = mutableListOf<Stopwatch>()
-
     private var timer: CountDownTimer? = null
 
     fun bind(stopwatch: Stopwatch) {
@@ -140,7 +138,6 @@ class StopwatchViewHolder(
     private companion object {
 
         private const val START_TIME = "00:00:00"
-//        private const val UNIT_TEN_MS = 10L
         private const val UNIT_ONE_SEC = 1000L
         private const val PERIOD = 1000L * 60L * 60L * 24L // Day
     }
