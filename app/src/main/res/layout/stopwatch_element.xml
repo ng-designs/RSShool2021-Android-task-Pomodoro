@@ -10,6 +10,7 @@
     android:layout_marginBottom="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/timerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -50,7 +51,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:background="@color/cardview_light_background"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/rounded_button"
             android:padding="5dp"
             android:src="@drawable/ic_baseline_play_arrow_24"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -62,7 +65,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:background="@color/cardview_light_background"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/rounded_button"
             android:padding="5dp"
             android:src="@drawable/ic_baseline_refresh_24"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -74,7 +79,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:background="@color/cardview_light_background"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/rounded_button"
             android:padding="5dp"
             android:src="@drawable/ic_baseline_delete_24"
             app:layout_constraintBottom_toBottomOf="parent"

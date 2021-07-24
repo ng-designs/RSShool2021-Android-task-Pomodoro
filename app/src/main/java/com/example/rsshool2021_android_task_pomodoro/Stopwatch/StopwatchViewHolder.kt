@@ -6,6 +6,7 @@ import android.graphics.drawable.AnimationDrawable
 import android.os.CountDownTimer
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
+import com.example.rsshool2021_android_task_pomodoro.MainActivity
 import com.example.rsshool2021_android_task_pomodoro.R
 import com.example.rsshool2021_android_task_pomodoro.databinding.StopwatchElementBinding
 
@@ -16,18 +17,24 @@ class StopwatchViewHolder(
 
 ) : RecyclerView.ViewHolder(binding.root) {
 
+    private val stopwatches = mutableListOf<Stopwatch>()
+
     private var timer: CountDownTimer? = null
 
     fun bind(stopwatch: Stopwatch) {
-        binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
 
-        binding.progressIndicator.setPeriod(stopwatch.startPeriod)
+        with(binding){
+            stopwatchTimer.text = stopwatch.currentMs.displayTime()
+            progressIndicator.setPeriod(stopwatch.startPeriod)
 
-        when {
-            stopwatch.currentMs <= 0L -> binding.progressIndicator.setCurrent(0)
-            stopwatch.currentMs == stopwatch.startPeriod -> {
-//                changeBackgroundOfItem(R.color.transparent)
-                binding.progressIndicator.setCurrent(stopwatch.currentMs)
+            when {
+                stopwatch.currentMs <= 0L -> {
+                    timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
+                    progressIndicator.setCurrent(0)
+                }
+                stopwatch.currentMs == stopwatch.startPeriod -> {
+                    progressIndicator.setCurrent(stopwatch.currentMs)
+                }
             }
         }
 
@@ -41,24 +48,34 @@ class StopwatchViewHolder(
     }
 
     private fun initButtonsListeners(stopwatch: Stopwatch) {
-        binding.startPauseButton.setOnClickListener {
-            if (stopwatch.isStarted) {
-                listener.stop(stopwatch.id, stopwatch.currentMs)
-            } else {
-                listener.start(stopwatch.id)
+
+        val runningTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
+
+        with(binding){
+            startPauseButton.setOnClickListener {
+
+
+                if (stopwatch.isStarted) {
+                    listener.stop(stopwatch.id, stopwatch.currentMs)
+                } else {
+                    listener.start(stopwatch.id)
+                }
             }
+
+            restartButton.setOnClickListener {
+                listener.reset(stopwatch.id)
+                if(timerCard.background.equals(R.color.red_600_light)){
+                    timerCard.setBackgroundColor(resources.getColor(R.color.white))
+                }
+            }
+
+            deleteButton.setOnClickListener { listener.delete(stopwatch.id) }
         }
-
-        binding.restartButton.setOnClickListener { listener.reset(stopwatch.id) }
-
-        binding.deleteButton.setOnClickListener { listener.delete(stopwatch.id) }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
     private fun startTimer(stopwatch: Stopwatch) {
         val drawable = resources.getDrawable(R.drawable.ic_baseline_pause_24, null)
-
-
         binding.startPauseButton.setImageDrawable(drawable)
 
         timer?.cancel()

@@ -37,18 +37,32 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (savedInstanceState != null) {
+
+            nextId = savedInstanceState.getInt(NEXT_ID)
+            val size = savedInstanceState.getInt(TIMERS_COUNT)
+            for (i in 0 until size) {
+                val id = savedInstanceState.getInt("$ID$i")
+                val initial = savedInstanceState.getLong("$INITIAL_VALUE$i")
+                val currentMs = savedInstanceState.getLong("$VALUE_MS$i")
+                val isStarted = savedInstanceState.getBoolean("$START$i")
+                stopwatches.add(Stopwatch(id, initial, currentMs, isStarted))
+            }
+            stopwatchAdapter.submitList(stopwatches.toList())
+        }
+
         binding.recycler.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = stopwatchAdapter
         }
 
-        binding.timePicker.setOnClickListener {
+        binding.timerValueInput.setOnClickListener {
 
             dialogBinding = SetTimerValueDialogBinding.inflate(this.layoutInflater)
 
-            val d: AlertDialog.Builder = AlertDialog.Builder(this)
-            d.setTitle("Set timer value")
-            d.setView(dialogBinding.root)
+            val valueSetDialog: AlertDialog.Builder = AlertDialog.Builder(this)
+            valueSetDialog.setTitle("Set timer value")
+            valueSetDialog.setView(dialogBinding.root)
 
             with(dialogBinding){
 
@@ -60,47 +74,36 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
                 secondsPicker.maxValue = 59
 
                 hoursPicker.setOnValueChangedListener { _, _, _ -> Log.d( TAG,"onValueChange: " ) }
-
                 minutesPicker.setOnValueChangedListener { _, _, _ -> Log.d( TAG,"onValueChange: " ) }
-
                 secondsPicker.setOnValueChangedListener { _, _, _ -> Log.d( TAG,"onValueChange: " ) }
 
             }
 
-            d.setPositiveButton("Done"
-            ) { _, _ ->
+            valueSetDialog.setPositiveButton("Done" ) { _, _ ->
                 run {
                     (dialogBinding.hoursPicker.value.toString() + ":" +
                             dialogBinding.minutesPicker.value.toString() + ":" +
                             dialogBinding.secondsPicker.value.toString()).also {
-                        binding.timePicker.text = it
+                        binding.timerValueInput.text = it
                     }
                 }
             }
-            d.setNegativeButton("Cancel"
-            ) { _, _ -> }
-            val alertDialog: AlertDialog = d.create()
-
-            alertDialog.show()
+            valueSetDialog.setNegativeButton("Cancel" ) { _, _ -> }
+            valueSetDialog.create().show()
         }
 
         binding.addNewStopwatchButton.setOnClickListener {
-            if (binding.timePicker.text.isNotEmpty()) {
-                val time = binding.timePicker.text.trim().split(":")
+            if (binding.timerValueInput.text.isNotEmpty()) {
+                val time = binding.timerValueInput.text.trim().split(":")
 
                 val mills = ((time[0].toLong() * 60L) + (time[1].toLong() * 60L) + time[2].toLong()) * 1000L
 
                 if (stopwatches.size <= 10) {
                     stopwatches.add(Stopwatch(nextId++, mills, mills, false))
                     stopwatchAdapter.submitList(stopwatches.toList())
-                } else Toast.makeText(this, "Timers limit is 10", Toast.LENGTH_LONG).show()
-            } else Toast.makeText(this, "Choose timer period", Toast.LENGTH_LONG).show()
+                } else Toast.makeText(this, "Timers limit reached(10)", Toast.LENGTH_LONG).show()
+            } else Toast.makeText(this, "Please set timer value", Toast.LENGTH_LONG).show()
         }
-
-//        binding.addNewStopwatchButton.setOnClickListener {
-//            stopwatches.add(Stopwatch(nextId++, 0, false))
-//            stopwatchAdapter.submitList(stopwatches.toList())
-//        }
     }
 
     override fun onValueChange(picker: NumberPicker?, oldVal: Int, newVal: Int) {
@@ -138,6 +141,20 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         stopwatches.addAll(newTimers)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putInt(NEXT_ID, nextId)
+        outState.putInt(TIMERS_COUNT, stopwatches.size)
+
+        for (i in stopwatches.indices) {
+            outState.putInt("$ID$i", stopwatches[i].id)
+            outState.putLong("$INITIAL_VALUE$i", stopwatches[i].startPeriod)
+            outState.putLong("$VALUE_MS$i", stopwatches[i].currentMs)
+            outState.putBoolean("$START$i", stopwatches[i].isStarted)
+        }
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
         val runningTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
@@ -149,7 +166,6 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
             startIntent.putExtra(LAST_SYSTEM_TIME, System.currentTimeMillis())
             startService(startIntent)
         }
-
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
@@ -161,5 +177,14 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         } catch (ex: Exception){
             Log.i("exception", ex.stackTraceToString())
         }
+    }
+
+    private companion object {
+        private const val NEXT_ID = "NEXT_ID"
+        private const val TIMERS_COUNT = "TIMERS_COUNT"
+        private const val ID = "ID"
+        private const val VALUE_MS = "VALUE_MS"
+        private const val INITIAL_VALUE = "INITIAL_VALUE"
+        private const val START = "START"
     }
 }
