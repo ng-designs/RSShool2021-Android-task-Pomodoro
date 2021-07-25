@@ -39,6 +39,7 @@ class StopwatchViewHolder(
         if (stopwatch.isStarted) {
             startTimer(stopwatch)
         } else {
+
             stopTimer(stopwatch)
         }
 
@@ -51,18 +52,17 @@ class StopwatchViewHolder(
         with(binding){
             startPauseButton.setOnClickListener {
 
-                if (stopwatch.isStarted) {
-                    listener.stop(stopwatch.id, stopwatch.currentMs)
-                    binding.startPauseButton.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_pause_24, null))
-                } else {
-                    listener.start(stopwatch.id)
-                    binding.startPauseButton.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_play_arrow_24, null))
+                if(binding.startPauseButton.text.equals(resources.getString(R.string.button_reset))){
+                    listener.reset(stopwatch.id)
+                    timerCard.setBackgroundColor(resources.getColor(R.color.white))
+                    binding.startPauseButton.text = resources.getString(R.string.button_start)
+                }else {
+                    if (stopwatch.isStarted) {
+                        listener.stop(stopwatch.id, stopwatch.currentMs)
+                    } else {
+                        listener.start(stopwatch.id)
+                    }
                 }
-            }
-
-            restartButton.setOnClickListener {
-                listener.reset(stopwatch.id)
-                timerCard.setBackgroundColor(resources.getColor(R.color.white))
             }
 
             deleteButton.setOnClickListener { listener.delete(stopwatch.id) }
@@ -70,6 +70,7 @@ class StopwatchViewHolder(
     }
 
     private fun startTimer(stopwatch: Stopwatch) {
+        binding.startPauseButton.text = resources.getString(R.string.button_stop)
 
         timer?.cancel()
         timer = getCountDownTimer(stopwatch)
@@ -77,9 +78,11 @@ class StopwatchViewHolder(
 
         binding.blinkingIndicator.isInvisible = false
         (binding.blinkingIndicator.background as? AnimationDrawable)?.start()
+
     }
 
     private fun stopTimer(stopwatch: Stopwatch) {
+        binding.startPauseButton.text = resources.getString(R.string.button_start)
 
         timer?.cancel()
         stopwatch.isStarted = false
@@ -104,12 +107,16 @@ class StopwatchViewHolder(
             }
 
             override fun onFinish() {
-                binding.timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
-                binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
-                Toast.makeText(itemView.context, "Timer ${stopwatch.startPeriod.displayTime()} is elapsed!", Toast.LENGTH_LONG).show()
 
                 timer?.cancel()
                 stopTimer(stopwatch)
+
+                binding.timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
+
+                binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+                Toast.makeText(itemView.context, "Timer ${stopwatch.startPeriod.displayTime()} is elapsed!", Toast.LENGTH_LONG).show()
+
+                binding.startPauseButton.text = resources.getString(R.string.button_reset)
             }
         }
     }

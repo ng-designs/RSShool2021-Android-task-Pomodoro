@@ -148,7 +148,8 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         if (activeTimer != null) {
             val startIntent = Intent(this, TimerService::class.java)
             startIntent.putExtra(COMMAND_ID, COMMAND_START)
-            startIntent.putExtra(TIMER_LAST_VALUE_MS, activeTimer.currentMs) //startTime runningTimer.currentMs
+            startIntent.putExtra(TIMER_INITIAL_VALUE, activeTimer.startPeriod)
+            startIntent.putExtra(TIMER_LAST_VALUE_MS, activeTimer.currentMs)
             startIntent.putExtra(LAST_SYSTEM_TIME, System.currentTimeMillis())
             startService(startIntent)
         }

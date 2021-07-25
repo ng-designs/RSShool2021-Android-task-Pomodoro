@@ -50,16 +50,17 @@ class TimerService : Service() {
     private fun processCommand(intent: Intent?) {
         when (intent?.extras?.getString(COMMAND_ID) ?: INVALID) {
             COMMAND_START -> {
+                val timerInitialValue = intent?.extras?.getLong(TIMER_INITIAL_VALUE) ?: return
                 val timerLastValue = intent?.extras?.getLong(TIMER_LAST_VALUE_MS) ?: return
-                val lastSystemTime = intent?.extras?.getLong(LAST_SYSTEM_TIME) ?: return
-                commandStart(timerLastValue, lastSystemTime)
+                val lastSystemTime = intent.extras?.getLong(LAST_SYSTEM_TIME) ?: return
+                commandStart(timerInitialValue, timerLastValue, lastSystemTime)
             }
             COMMAND_STOP -> commandStop()
             INVALID -> return
         }
     }
 
-    private fun commandStart(timerLastValue: Long, lastSystemTime: Long) {
+    private fun commandStart(timerInitialValue: Long, timerLastValue: Long, lastSystemTime: Long) {
         if (isServiceStarted) {
             return
         }
@@ -67,24 +68,28 @@ class TimerService : Service() {
         try {
             moveToStartedState()
             startForegroundAndShowNotification()
-            continueTimer(timerLastValue, lastSystemTime)
+            continueTimer(timerInitialValue, timerLastValue, lastSystemTime)
         } finally {
             isServiceStarted = true
         }
     }
 
-    private fun continueTimer(timerLastValue: Long, lastSystemTime: Long) {
+    private fun continueTimer(timerInitialValue: Long, timerLastValue: Long, lastSystemTime: Long) {
         job = GlobalScope.launch(Dispatchers.Main) {
             while (true) {
                 val time = timerLastValue - (System.currentTimeMillis() - lastSystemTime)
-                if (time <= 0) commandStop()
-                notificationManager?.notify(
-                    NOTIFICATION_ID,
-                    getNotification(
-                        time.displayTime()
-                    )
+                if (time > 0) {
+                    notificationManager?.notify(
+                        NOTIFICATION_ID, getNotification( time.displayTime() )
                 )
-                delay(INTERVAL)
+                    delay(INTERVAL)
+                }else {
+                    notificationManager?.notify(
+                        NOTIFICATION_ID,
+                        getNotification("(${timerInitialValue.displayTime()}) Timer Elapsed!")
+                    )
+                    break
+                }
             }
         }
     }

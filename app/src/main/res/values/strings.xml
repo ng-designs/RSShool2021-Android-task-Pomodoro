@@ -1,4 +1,8 @@
 <resources>
-    <string name="app_name">RSShool2021-Pomodoro</string>
+    <string name="app_name">Pomodoro(RS.School-2021)</string>
     <string name="time">%1$d:%2$d</string>
+    <string name="button_start">START</string>
+    <string name="button_stop">STOP</string>
+    <string name="button_reset">RESET</string>
+    <string name="elapsed_time">00:00:00</string>
 </resources>
