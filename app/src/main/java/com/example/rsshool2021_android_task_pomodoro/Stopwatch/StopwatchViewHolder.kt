@@ -45,6 +45,7 @@ class StopwatchViewHolder(
         initButtonsListeners(stopwatch)
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private fun initButtonsListeners(stopwatch: Stopwatch) {
 
         with(binding){
@@ -52,8 +53,10 @@ class StopwatchViewHolder(
 
                 if (stopwatch.isStarted) {
                     listener.stop(stopwatch.id, stopwatch.currentMs)
+                    binding.startPauseButton.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_pause_24, null))
                 } else {
                     listener.start(stopwatch.id)
+                    binding.startPauseButton.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_play_arrow_24, null))
                 }
             }
 
@@ -66,10 +69,7 @@ class StopwatchViewHolder(
         }
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     private fun startTimer(stopwatch: Stopwatch) {
-        val drawable = resources.getDrawable(R.drawable.ic_baseline_pause_24, null)
-        binding.startPauseButton.setImageDrawable(drawable)
 
         timer?.cancel()
         timer = getCountDownTimer(stopwatch)
@@ -79,13 +79,10 @@ class StopwatchViewHolder(
         (binding.blinkingIndicator.background as? AnimationDrawable)?.start()
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
     private fun stopTimer(stopwatch: Stopwatch) {
-        val drawable = resources.getDrawable(R.drawable.ic_baseline_play_arrow_24, null)
-        binding.startPauseButton.setImageDrawable(drawable)
 
-        stopwatch.isStarted = false
         timer?.cancel()
+        stopwatch.isStarted = false
 
         binding.blinkingIndicator.isInvisible = true
         (binding.blinkingIndicator.background as? AnimationDrawable)?.stop()
@@ -95,7 +92,6 @@ class StopwatchViewHolder(
         return object : CountDownTimer(PERIOD, UNIT_ONE_SEC) {
 
             override fun onTick(millisUntilFinished: Long) {
-
                 when {
                     stopwatch.currentMs <= 0L -> onFinish()
                     stopwatch.isStarted -> {

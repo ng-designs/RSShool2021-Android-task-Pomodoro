@@ -37,20 +37,6 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState != null) {
-
-            nextId = savedInstanceState.getInt(NEXT_ID)
-            val size = savedInstanceState.getInt(TIMERS_COUNT)
-            for (i in 0 until size) {
-                val id = savedInstanceState.getInt("$ID$i")
-                val initial = savedInstanceState.getLong("$INITIAL_VALUE$i")
-                val currentMs = savedInstanceState.getLong("$VALUE_MS$i")
-                val isStarted = savedInstanceState.getBoolean("$START$i")
-                stopwatches.add(Stopwatch(id, initial, currentMs, isStarted))
-            }
-            stopwatchAdapter.submitList(stopwatches.toList())
-        }
-
         binding.recycler.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = stopwatchAdapter
@@ -83,9 +69,9 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
                 run {
                     with(dialogBinding){
 
-                        ((if(hoursPicker.value == 0) "00" else hoursPicker.value.toString()) + ":" +
-                                (if(minutesPicker.value == 0) "00" else minutesPicker.value.toString()) + ":" +
-                                (if(secondsPicker.value == 0) "00" else secondsPicker.value.toString())
+                        ((if(hoursPicker.value < 10) "0${hoursPicker.value}" else hoursPicker.value.toString()) + ":" +
+                                (if(minutesPicker.value < 10) "0${minutesPicker.value}" else minutesPicker.value.toString()) + ":" +
+                                (if(secondsPicker.value < 10) "0${secondsPicker.value}" else secondsPicker.value.toString())
                                 ).also { binding.timerValueInput.text = it }
                     }
                 }
@@ -133,6 +119,10 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
 
     private fun changeStopwatch(id: Int, currentMs: Long?, isStarted: Boolean) {
         val newTimers = mutableListOf<Stopwatch>()
+        val activeTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
+
+        if(activeTimer != null && isStarted ) stopwatches[activeTimer.id].isStarted = false
+
         stopwatches.forEach {
             if (it.id == id) {
                 newTimers.add(
@@ -145,33 +135,20 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
                 newTimers.add(it)
             }
         }
+
         stopwatchAdapter.submitList(newTimers)
         stopwatches.clear()
         stopwatches.addAll(newTimers)
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        outState.putInt(NEXT_ID, nextId)
-        outState.putInt(TIMERS_COUNT, stopwatches.size)
-
-        for (i in stopwatches.indices) {
-            outState.putInt("$ID$i", stopwatches[i].id)
-            outState.putLong("$INITIAL_VALUE$i", stopwatches[i].startPeriod)
-            outState.putLong("$VALUE_MS$i", stopwatches[i].currentMs)
-            outState.putBoolean("$START$i", stopwatches[i].isStarted)
-        }
-    }
-
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
-        val runningTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
+        val activeTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
 
-        if (runningTimer != null) {
+        if (activeTimer != null) {
             val startIntent = Intent(this, TimerService::class.java)
             startIntent.putExtra(COMMAND_ID, COMMAND_START)
-            startIntent.putExtra(TIMER_LAST_VALUE_MS, runningTimer.currentMs) //startTime runningTimer.currentMs
+            startIntent.putExtra(TIMER_LAST_VALUE_MS, activeTimer.currentMs) //startTime runningTimer.currentMs
             startIntent.putExtra(LAST_SYSTEM_TIME, System.currentTimeMillis())
             startService(startIntent)
         }
@@ -186,14 +163,5 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         } catch (ex: Exception){
             Log.i("exception", ex.stackTraceToString())
         }
-    }
-
-    private companion object {
-        private const val NEXT_ID = "NEXT_ID"
-        private const val TIMERS_COUNT = "TIMERS_COUNT"
-        private const val ID = "ID"
-        private const val VALUE_MS = "VALUE_MS"
-        private const val INITIAL_VALUE = "INITIAL_VALUE"
-        private const val START = "START"
     }
 }
