@@ -25,6 +25,7 @@ class StopwatchViewHolder(
         with(binding){
             stopwatchTimer.text = stopwatch.currentMs.displayTime()
             progressIndicator.setPeriod(stopwatch.startPeriod)
+            progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs)
 
             when {
                 stopwatch.currentMs <= 0L -> {
@@ -33,13 +34,21 @@ class StopwatchViewHolder(
                 stopwatch.currentMs == stopwatch.startPeriod -> {
                     progressIndicator.setCurrent(stopwatch.currentMs)
                 }
+
+            }
+
+            if( stopwatch.isElapsed ) {
+                timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
+                startPauseButton.text = resources.getString(R.string.button_reset)
+
+            }else{
+                timerCard.setBackgroundColor(resources.getColor(R.color.white))
             }
         }
 
         if (stopwatch.isStarted) {
             startTimer(stopwatch)
         } else {
-
             stopTimer(stopwatch)
         }
 
@@ -54,6 +63,7 @@ class StopwatchViewHolder(
 
                 if(binding.startPauseButton.text.equals(resources.getString(R.string.button_reset))){
                     listener.reset(stopwatch.id)
+                    stopwatch.isElapsed = false
                     timerCard.setBackgroundColor(resources.getColor(R.color.white))
                     binding.startPauseButton.text = resources.getString(R.string.button_start)
                 }else {
@@ -65,7 +75,10 @@ class StopwatchViewHolder(
                 }
             }
 
-            deleteButton.setOnClickListener { listener.delete(stopwatch.id) }
+            deleteButton.setOnClickListener {
+                stopTimer(stopwatch)
+                listener.delete(stopwatch.id)
+            }
         }
     }
 
@@ -107,11 +120,10 @@ class StopwatchViewHolder(
             }
 
             override fun onFinish() {
-
+                binding.timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
+                stopwatch.isElapsed = true
                 timer?.cancel()
                 stopTimer(stopwatch)
-
-                binding.timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
 
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
                 Toast.makeText(itemView.context, "Timer ${stopwatch.startPeriod.displayTime()} is elapsed!", Toast.LENGTH_LONG).show()

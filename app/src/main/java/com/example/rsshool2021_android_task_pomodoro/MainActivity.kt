@@ -88,10 +88,10 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
             if (time > 0) {
                 val mills = (((pickerValues[0].toLong() * 60L) + pickerValues[1].toLong()) * 60L + pickerValues[2].toLong()) * 1000L
 
-                if (stopwatches.size <= 10) {
+                if (stopwatches.size <= 20) {
                     stopwatches.add(Stopwatch(nextId++, mills, mills, false))
                     stopwatchAdapter.submitList(stopwatches.toList())
-                } else Toast.makeText(this, "Timers limit reached(10)", Toast.LENGTH_LONG).show()
+                } else Toast.makeText(this, "Timers limit reached(20)", Toast.LENGTH_LONG).show()
             } else Toast.makeText(this, "Please set timer value", Toast.LENGTH_LONG).show()
         }
     }
@@ -113,15 +113,15 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
     }
 
     override fun delete(id: Int) {
+        changeStopwatch(id,null,false)
         stopwatches.remove(stopwatches.find { it.id == id })
         stopwatchAdapter.submitList(stopwatches.toList())
     }
 
     private fun changeStopwatch(id: Int, currentMs: Long?, isStarted: Boolean) {
         val newTimers = mutableListOf<Stopwatch>()
-        val activeTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
 
-        if(activeTimer != null && isStarted ) stopwatches[activeTimer.id].isStarted = false
+        stopwatches.find { it.isStarted && it.id != id && isStarted }?.let { it.isStarted = false }
 
         stopwatches.forEach {
             if (it.id == id) {
@@ -136,14 +136,15 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
             }
         }
 
-        stopwatchAdapter.submitList(newTimers)
         stopwatches.clear()
         stopwatches.addAll(newTimers)
+        stopwatchAdapter.submitList(newTimers)
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackgrounded() {
-        val activeTimer = stopwatches.find { it.isStarted }?.let { stopwatches[it.id] }
+        val activeTimer = stopwatches.find { it.isStarted }
 
         if (activeTimer != null) {
             val startIntent = Intent(this, TimerService::class.java)
