@@ -97,7 +97,6 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
     }
 
     override fun onValueChange(picker: NumberPicker?, oldVal: Int, newVal: Int) {
-
     }
 
     override fun start(id: Int) {
@@ -113,33 +112,22 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
     }
 
     override fun delete(id: Int) {
-        changeStopwatch(id,null,false)
         stopwatches.remove(stopwatches.find { it.id == id })
         stopwatchAdapter.submitList(stopwatches.toList())
     }
 
     private fun changeStopwatch(id: Int, currentMs: Long?, isStarted: Boolean) {
-        val newTimers = mutableListOf<Stopwatch>()
 
         stopwatches.find { it.isStarted && it.id != id && isStarted }?.let { it.isStarted = false }
 
-        stopwatches.forEach {
-            if (it.id == id) {
-                newTimers.add(
-                    Stopwatch(
-                        it.id,
-                        it.startPeriod,
-                        (if(currentMs?.toInt() == 0) it.startPeriod else it.currentMs),
-                        isStarted))
-            } else {
-                newTimers.add(it)
-            }
+        stopwatches.firstOrNull(){ it.id == id }?.let {
+            it.isStarted = isStarted
+            if(currentMs != null) it.currentMs = currentMs
+            if(currentMs?.toInt() == 0) it.currentMs = it.startPeriod
         }
 
-        stopwatches.clear()
-        stopwatches.addAll(newTimers)
-        stopwatchAdapter.submitList(newTimers)
-
+        stopwatchAdapter.submitList(stopwatches.toList())
+        stopwatchAdapter.notifyDataSetChanged()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)

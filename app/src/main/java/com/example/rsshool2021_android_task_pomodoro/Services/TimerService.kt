@@ -51,7 +51,7 @@ class TimerService : Service() {
         when (intent?.extras?.getString(COMMAND_ID) ?: INVALID) {
             COMMAND_START -> {
                 val timerInitialValue = intent?.extras?.getLong(TIMER_INITIAL_VALUE) ?: return
-                val timerLastValue = intent?.extras?.getLong(TIMER_LAST_VALUE_MS) ?: return
+                val timerLastValue = intent.extras?.getLong(TIMER_LAST_VALUE_MS) ?: return
                 val lastSystemTime = intent.extras?.getLong(LAST_SYSTEM_TIME) ?: return
                 commandStart(timerInitialValue, timerLastValue, lastSystemTime)
             }
