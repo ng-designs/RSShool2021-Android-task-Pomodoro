@@ -11,7 +11,7 @@
         android:id="@+id/timerValueInput"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="25sp"
+        android:textSize="27sp"
         app:layout_constraintBaseline_toBaselineOf="@id/add_new_stopwatch_button"
         android:text="@string/picker_start_value"
         app:layout_constraintBottom_toBottomOf="parent"

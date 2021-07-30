@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.rsshool2021_android_task_pomodoro.Dialogs.*
 import com.example.rsshool2021_android_task_pomodoro.Services.*
 import com.example.rsshool2021_android_task_pomodoro.Stopwatch.Stopwatch
 import com.example.rsshool2021_android_task_pomodoro.Stopwatch.StopwatchAdapter
@@ -21,10 +22,9 @@ import com.example.rsshool2021_android_task_pomodoro.databinding.ActivityMainBin
 import com.example.rsshool2021_android_task_pomodoro.databinding.SetTimerValueDialogBinding
 
 
-class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, NumberPicker.OnValueChangeListener {
+class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var dialogBinding: SetTimerValueDialogBinding
 
     private val stopwatchAdapter = StopwatchAdapter(this)
     private val stopwatches = mutableListOf<Stopwatch>()
@@ -43,41 +43,7 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
         }
 
         binding.timerValueInput.setOnClickListener {
-
-            dialogBinding = SetTimerValueDialogBinding.inflate(this.layoutInflater)
-
-            val valueSetDialog: AlertDialog.Builder = AlertDialog.Builder(this)
-            valueSetDialog.setTitle("Set timer value")
-            valueSetDialog.setView(dialogBinding.root)
-
-            with(dialogBinding){
-
-                hoursPicker.maxValue = 23
-                hoursPicker.minValue = 0
-                minutesPicker.minValue = 0
-                minutesPicker.maxValue = 59
-                secondsPicker.minValue = 0
-                secondsPicker.maxValue = 59
-
-                hoursPicker.setOnValueChangedListener { _, _, _ -> Log.d( TAG,"onValueChange: " ) }
-                minutesPicker.setOnValueChangedListener { _, _, _ -> Log.d( TAG,"onValueChange: " ) }
-                secondsPicker.setOnValueChangedListener { _, _, _ -> Log.d( TAG,"onValueChange: " ) }
-
-            }
-
-            valueSetDialog.setPositiveButton("Done" ) { _, _ ->
-                run {
-                    with(dialogBinding){
-
-                        ((if(hoursPicker.value < 10) "0${hoursPicker.value}" else hoursPicker.value.toString()) + ":" +
-                                (if(minutesPicker.value < 10) "0${minutesPicker.value}" else minutesPicker.value.toString()) + ":" +
-                                (if(secondsPicker.value < 10) "0${secondsPicker.value}" else secondsPicker.value.toString())
-                                ).also { binding.timerValueInput.text = it }
-                    }
-                }
-            }
-            valueSetDialog.setNegativeButton("Cancel" ) { _, _ -> }
-            valueSetDialog.create().show()
+            TimerValueSetDialog(this, binding.timerValueInput)
         }
 
         binding.addNewStopwatchButton.setOnClickListener {
@@ -94,9 +60,6 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
                 } else Toast.makeText(this, "Timers limit reached(20)", Toast.LENGTH_LONG).show()
             } else Toast.makeText(this, "Please set timer value", Toast.LENGTH_LONG).show()
         }
-    }
-
-    override fun onValueChange(picker: NumberPicker?, oldVal: Int, newVal: Int) {
     }
 
     override fun start(id: Int) {
@@ -120,13 +83,13 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver, 
 
         stopwatches.find { it.isStarted && it.id != id && isStarted }?.let { it.isStarted = false }
 
-        stopwatches.firstOrNull(){ it.id == id }?.let {
+        stopwatches.find { it.id == id }?.let {
             it.isStarted = isStarted
             if(currentMs != null) it.currentMs = currentMs
             if(currentMs?.toInt() == 0) it.currentMs = it.startPeriod
         }
 
-        stopwatchAdapter.submitList(stopwatches.toList())
+        stopwatchAdapter.submitList(stopwatches.toMutableList())
         stopwatchAdapter.notifyDataSetChanged()
     }
 

@@ -6,6 +6,7 @@ import android.graphics.drawable.AnimationDrawable
 import android.os.CountDownTimer
 import android.widget.Toast
 import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rsshool2021_android_task_pomodoro.MainActivity
 import com.example.rsshool2021_android_task_pomodoro.R
@@ -24,29 +25,27 @@ class StopwatchViewHolder(
 
         if (stopwatch.isStarted) {
             startTimer(stopwatch)
-            setIsRecyclable(false)
+            if(isRecyclable)setIsRecyclable(false)
         } else {
             stopTimer(stopwatch)
-            setIsRecyclable(true)
+            if(!isRecyclable)setIsRecyclable(true)
         }
 
         with(binding){
-            stopwatchTimer.text = stopwatch.currentMs.displayTime()
-            progressIndicator.setPeriod(stopwatch.startPeriod)
-            progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs)
-
-            when {
-                stopwatch.currentMs <= 0L -> {
-                    progressIndicator.setCurrent(0)
-                }
-            }
-
-            if( stopwatch.isElapsed ) {
-                timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
+            if(stopwatch.isElapsed) {
+                progressIndicator.setCurrent(0)
                 startPauseButton.text = resources.getString(R.string.button_reset)
+                timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
+
             }else{
                 timerCard.setBackgroundColor(resources.getColor(R.color.white))
             }
+        }
+
+        if((stopwatch.startPeriod == stopwatch.currentMs) or stopwatch.isElapsed) {
+            binding.progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs)
+        }else{
+            binding.progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs  + UNIT_ONE_SEC)
         }
 
         initButtonsListeners(stopwatch)
@@ -74,7 +73,7 @@ class StopwatchViewHolder(
 
             deleteButton.setOnClickListener {
                 stopTimer(stopwatch)
-                setIsRecyclable(true)
+                if(!isRecyclable)setIsRecyclable(true)
                 listener.delete(stopwatch.id)
             }
         }
@@ -82,6 +81,8 @@ class StopwatchViewHolder(
 
     private fun startTimer(stopwatch: Stopwatch) {
         binding.startPauseButton.text = resources.getString(R.string.button_stop)
+        binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+        binding.progressIndicator.setPeriod(stopwatch.startPeriod)
 
         timer?.cancel()
         timer = getCountDownTimer(stopwatch)
@@ -94,6 +95,8 @@ class StopwatchViewHolder(
 
     private fun stopTimer(stopwatch: Stopwatch) {
         binding.startPauseButton.text = resources.getString(R.string.button_start)
+        binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+        binding.progressIndicator.setPeriod(stopwatch.startPeriod)
 
         timer?.cancel()
         stopwatch.isStarted = false
@@ -103,28 +106,34 @@ class StopwatchViewHolder(
     }
 
     private fun getCountDownTimer(stopwatch: Stopwatch): CountDownTimer {
-        return object : CountDownTimer(PERIOD, UNIT_ONE_SEC) {
+        return object : CountDownTimer(stopwatch.currentMs, UNIT_ONE_SEC) {
 
             override fun onTick(millisUntilFinished: Long) {
-                when {
-                    stopwatch.currentMs <= 0L -> onFinish()
-                    stopwatch.isStarted -> {
-                        stopwatch.currentMs -= UNIT_ONE_SEC
-                        binding.progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs)
+
+                    if(stopwatch.isStarted){
+                        stopwatch.currentMs = millisUntilFinished
                         binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+                        binding.progressIndicator.setCurrent(stopwatch.startPeriod - stopwatch.currentMs + UNIT_ONE_SEC)
+                    } else{
+                        timer?.cancel()
                     }
-                    else -> timer?.cancel()
-                }
             }
 
             override fun onFinish() {
+                binding.stopwatchTimer.text = 0L.displayTime()
+                binding.progressIndicator.setCurrent(0)
+                stopwatch.currentMs = 0
+                stopwatch.isElapsed = true
                 stopTimer(stopwatch)
                 binding.timerCard.setBackgroundColor(resources.getColor(R.color.red_600_light))
-                stopwatch.isElapsed = true
 
-                binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
-                Toast.makeText(itemView.context, "Timer ${stopwatch.startPeriod.displayTime()} is elapsed!", Toast.LENGTH_LONG).show()
-
+//                if(stopwatch.isElapsed) {
+//                    Toast.makeText(
+//                        itemView.context,
+//                        "Timer ${stopwatch.startPeriod.displayTime()} is elapsed!",
+//                        Toast.LENGTH_LONG
+//                    ).show()
+//                }
                 binding.startPauseButton.text = resources.getString(R.string.button_reset)
             }
         }

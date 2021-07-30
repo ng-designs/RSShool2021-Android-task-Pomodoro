@@ -1,9 +1,6 @@
 package com.example.rsshool2021_android_task_pomodoro.Services
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -19,18 +16,6 @@ class TimerService : Service() {
     private var isServiceStarted = false
     private var notificationManager: NotificationManager? = null
     private var job: Job? = null
-
-    private val builder by lazy {
-        NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Pomodoro")
-            .setGroup("Timer")
-            .setGroupSummary(false)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setContentIntent(getPendingIntent())
-            .setSilent(true)
-            .setSmallIcon(R.drawable.ic_baseline_access_alarm_24)
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -80,13 +65,13 @@ class TimerService : Service() {
                 val time = timerLastValue - (System.currentTimeMillis() - lastSystemTime)
                 if (time > 0) {
                     notificationManager?.notify(
-                        NOTIFICATION_ID, getNotification( time.displayTime() )
+                        NOTIFICATION_ID, getNotification( time.displayTime(), true)
                 )
                     delay(INTERVAL)
                 }else {
                     notificationManager?.notify(
                         NOTIFICATION_ID,
-                        getNotification("(${timerInitialValue.displayTime()}) Timer Elapsed!")
+                        getNotification("(${timerInitialValue.displayTime()}) Timer Elapsed!", false)
                     )
                     break
                 }
@@ -120,11 +105,24 @@ class TimerService : Service() {
 
     private fun startForegroundAndShowNotification() {
         createChannel()
-        val notification = getNotification("content")
+        val notification = getNotification("content",true)
         startForeground(NOTIFICATION_ID, notification)
     }
 
-    private fun getNotification(content: String) = builder.setContentText(content).build()
+    private fun getNotification(content: String, isSilent : Boolean): Notification {
+
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Pomodoro")
+            .setGroup("Timer")
+            .setGroupSummary(false)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(getPendingIntent())
+            .setSilent(isSilent)
+            .setSmallIcon(R.drawable.ic_baseline_access_alarm_24)
+            .setContentText(content).build()
+    }
+
 
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
